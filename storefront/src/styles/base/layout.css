@@ -1,0 +1,43 @@
+@tailwind base;
+/* Додайте цю строку */
+@tailwind components;
+/* Це може бути у вас теж */
+@tailwind utilities;
+/* Це може бути у вас теж */
+
+@layer base {
+    html {
+        @apply w-full min-w-[320px] overflow-x-hidden;
+    }
+
+
+    body,
+    footer {
+        font-family: var(--font-proxima-nova);
+        width: 100%;
+        max-width: 100vw;
+        margin: 0 auto;
+    }
+
+    .font-roboto {
+        font-family: var(--font-roboto);
+    }
+
+    h1,
+    h2,
+    h3 {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+        padding-top: 60px;
+    }
+}
+
+@layer base {
+    .NavigationHeader {
+        width: 100%;
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+}

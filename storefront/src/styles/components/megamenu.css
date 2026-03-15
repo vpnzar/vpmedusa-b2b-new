@@ -1,0 +1,44 @@
+@tailwind components;
+
+@layer components {
+    .megamenu-panel {
+        /* 1. Початковий стан: ПОВНІСТЮ сховано */
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+
+        /* 2. Позиціювання: вилітає справа від сайдбару */
+        position: absolute;
+        left: 100%;
+        top: -1px;
+        /* щоб збігалося з рамкою */
+        z-index: 9999;
+
+        /* 3. Оформлення як у Porto */
+        @apply bg-white border border-gray-200 p-8 shadow-xl;
+        min-width: 800px;
+        min-height: 100%;
+
+        /* 4. Анімація появи */
+        transform: translateX(10px);
+        transition: all 0.2s ease-in-out;
+    }
+
+    /* 5. ЛОГІКА ПОЯВИ: спрацьовує, бо в JSX є клас 'group' на <li> */
+    .group:hover .megamenu-panel {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(0);
+    }
+
+    /* Стилізація заголовків всередині мегаменю */
+    .megamenu-panel h4 {
+        @apply text-gray-900 font-bold text-xs uppercase tracking-wider mb-4 border-b border-gray-100 pb-2;
+    }
+
+    /* Стилізація посилань підкатегорій */
+    .megamenu-panel ul li a {
+        @apply text-gray-600 hover:text-[#0088cc] transition-colors;
+    }
+}

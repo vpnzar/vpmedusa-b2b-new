@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+ 
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names \"BACKEND,STOREFRONT\" --prefix-colors \"cyan,green\" \"npm run dev --prefix backend\" \"npm run dev --prefix storefront\""
+  }
+
+  
+}

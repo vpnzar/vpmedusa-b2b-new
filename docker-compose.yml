@@ -1,0 +1,51 @@
+services:
+  # 1. ПОШУК (Meilisearch)
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_MASTER_KEY=GN645xqX-5oda_F8fc9bYPSo_k60Z8nsPzyNWneQjss
+      - MEILI_ENV=development
+    restart: always
+
+  # 2. STRAPI (CMS для контенту)
+  strapi:
+    container_name: strapi
+    image: strapi/strapi:4.15.0 # Вкажемо конкретну версію v4
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DATABASE_CLIENT=sqlite
+      - DATABASE_FILENAME=.tmp/data.db
+      - APP_KEYS=tobereplaced1,tobereplaced2
+      - API_TOKEN_SALT=tobereplacedSalt
+      - ADMIN_JWT_SECRET=tobereplacedAdmin
+      - JWT_SECRET=tobereplacedJWT
+    volumes:
+      - ./strapi-app:/srv/app
+    ports:
+      - "1337:1337"
+
+  # 3. БАЗА ДЛЯ MEDUSA (Порт 5432)
+  medusa_db:
+    image: postgres:16
+    container_name: medusa_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=medusa
+      - POSTGRES_PASSWORD=medusa
+      - POSTGRES_DB=medusa_db
+    restart: always
+    volumes:
+      - ./postgres_data_medusa:/var/lib/postgresql/data
+
+  # 4. КЕШ (Redis)
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always

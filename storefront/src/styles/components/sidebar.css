@@ -1,0 +1,41 @@
+@layer components {
+    .side-category-container {
+        @apply flex flex-col p-0 divide-y divide-neutral-200;
+    }
+
+    .side-category-header {
+        @apply flex justify-between items-center p-3;
+    }
+
+    .side-category-title {
+        @apply text-sm font-medium;
+    }
+
+    .side-category-clear-link {
+        @apply text-xs text-neutral-500 hover:text-neutral-700;
+    }
+
+    .side-category-list {
+        @apply flex flex-col gap-3 text-sm p-3 text-neutral-500;
+    }
+
+    .side-category-item {
+        @apply flex items-center gap-2 mb-2;
+    }
+
+    .side-category-toggle-btn {
+        @apply flex items-center gap-2 hover:text-neutral-700;
+    }
+
+    .side-category-link {
+        @apply flex gap-2 items-center hover:text-neutral-700;
+    }
+
+    .side-category-leaf-link {
+        @apply flex gap-2 items-center hover:text-neutral-700 text-start hover:cursor-pointer;
+    }
+
+    .side-category-icon {
+        @apply h-3 mx-1;
+    }
+}

@@ -1,0 +1,17 @@
+@tailwind base;
+/* Додайте цю строку */
+@tailwind components;
+/* Це може бути у вас теж */
+@tailwind utilities;
+/* Це може бути у вас теж */
+
+
+
+@layer base {
+    :root {
+        --header-height: 60px;
+        --nav-height: 50px;
+        --font-proxima-nova: 'Proxima Nova', sans-serif;
+        --font-roboto: 'Roboto', sans-serif;
+    }
+}

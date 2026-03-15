@@ -1,0 +1,36 @@
+.group:hover>a {
+    background-color: #0088cc !important;
+    color: white !important;
+}
+
+.group:hover>a i {
+    color: white !important;
+    opacity: 1 !important;
+}
+
+.megamenu-panel::before {
+    content: "";
+    position: absolute;
+    left: -20px;
+    top: 20px;
+    width: 20px;
+    height: 20px;
+    background: red;
+}
+
+.group:hover>.megamenu-panel {
+    display: block;
+}
+
+.group>.megamenu-panel::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: 12px;
+
+    border-right: 12px solid #fff;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+
+    z-index: 10000;
+}

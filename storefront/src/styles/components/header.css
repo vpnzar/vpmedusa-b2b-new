@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .main-header {
+        @apply sticky top-0 z-40 bg-white border-b border-ui-border-base;
+        height: var(--header-height);
+    }
+
+    .main-nav-container {
+        @apply w-full bg-gray-100 shadow-md transition-all duration-200;
+        background: #f8f9fa;
+        width: 100%;
+        max-width: 1440px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .main-nav {
+        @apply container h-full flex items-center justify-between;
+    }
+
+    .main-nav-sticky {
+        @apply fixed top-0 left-0 right-0 bg-white shadow-md;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 50;
+        background: white;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+}

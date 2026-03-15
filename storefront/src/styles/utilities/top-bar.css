@@ -1,0 +1,11 @@
+.text-xsmall-regular {
+    @apply text-[10px] leading-4 font-normal;
+}
+
+.top-bar-link {
+    @apply transition-colors duration-200 hover:text-gray-900;
+}
+
+.top-bar-select {
+    @apply bg-transparent border-none py-1 pr-6 pl-2;
+}
