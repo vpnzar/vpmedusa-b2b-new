@@ -10,7 +10,7 @@ const Hero = () => {
 
       {/* Ліва колонка - 25% ширини */}
       <aside className="hidden lg:block w-1/4">
-        <SideMenu isStatic={true} />
+        <SideMenu />
       </aside>
 
       {/* Права колонка - Банер 75% ширини */}
