@@ -1,34 +1,7 @@
+version: '3.8'
+
 services:
-  # 1. ПОШУК (Meilisearch)
-  meilisearch:
-    image: getmeili/meilisearch:latest
-    container_name: meilisearch
-    ports:
-      - "7700:7700"
-    environment:
-      - MEILI_MASTER_KEY=GN645xqX-5oda_F8fc9bYPSo_k60Z8nsPzyNWneQjss
-      - MEILI_ENV=development
-    restart: always
-
-  # 2. STRAPI (CMS для контенту)
-  strapi:
-    container_name: strapi
-    image: strapi/strapi:4.15.0 # Вкажемо конкретну версію v4
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=development
-      - DATABASE_CLIENT=sqlite
-      - DATABASE_FILENAME=.tmp/data.db
-      - APP_KEYS=tobereplaced1,tobereplaced2
-      - API_TOKEN_SALT=tobereplacedSalt
-      - ADMIN_JWT_SECRET=tobereplacedAdmin
-      - JWT_SECRET=tobereplacedJWT
-    volumes:
-      - ./strapi-app:/srv/app
-    ports:
-      - "1337:1337"
-
-  # 3. БАЗА ДЛЯ MEDUSA (Порт 5432)
+  # 1. БАЗА (Твої оригінальні дані)
   medusa_db:
     image: postgres:16
     container_name: medusa_db
@@ -42,10 +15,51 @@ services:
     volumes:
       - ./postgres_data_medusa:/var/lib/postgresql/data
 
-  # 4. КЕШ (Redis)
+  # 2. MEDUSA (Використовує ТВИЙ Dockerfile в корені)
+  medusa:
+    container_name: medusa_backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - medusa_db
+    ports:
+      - "9000:9000"
+    environment:
+      - DATABASE_URL=postgres://medusa:medusa@medusa_db:5432/medusa_db
+      - REDIS_URL=redis://redis:6379
+
+  # 3. STRAPI (Окремий сервіс)
+  strapi:
+    container_name: strapi
+    build:
+      context: ./strapi-cms
+      dockerfile: Dockerfile
+    depends_on:
+      - medusa_db
+    ports:
+      - "1337:1337"
+    environment:
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=medusa_db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=strapi_db
+      - DATABASE_USERNAME=medusa
+      - DATABASE_PASSWORD=medusa
+      - JWT_SECRET=tobereplaced
+      - ADMIN_JWT_SECRET=tobereplaced
+      - APP_KEYS=key1,key2
+    env_file:
+      - ./strapi-cms/.env
+
+  # 4. REDIS & SEARCH
   redis:
     image: redis:latest
     container_name: redis
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
     ports:
-      - "6379:6379"
-    restart: always
+      - "7700:7700"
+    environment:
+      - MEILI_MASTER_KEY=GN645xqX-5oda_F8fc9bYPSo_k60Z8nsPzyNWneQjss

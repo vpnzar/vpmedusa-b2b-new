@@ -4,6 +4,7 @@ import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
+// Для 4 колонок краще ставити ліміт, кратний 4 (наприклад, 12 або 16)
 const PRODUCT_LIMIT = 12
 
 type PaginatedProductsParams = {
@@ -30,7 +31,7 @@ export default async function PaginatedProducts({
   countryCode: string
 }) {
   const queryParams: PaginatedProductsParams = {
-    limit: 12,
+    limit: PRODUCT_LIMIT, // Використовуємо константу
   }
 
   if (collectionId) {
@@ -45,8 +46,9 @@ export default async function PaginatedProducts({
     queryParams["id"] = productsIds
   }
 
-  if (sortBy === "created_at") {
-    queryParams["order"] = "created_at"
+  // Налаштування сортування
+  if (sortBy) {
+    queryParams["order"] = sortBy
   }
 
   const region = await getRegion(countryCode)
@@ -69,7 +71,11 @@ export default async function PaginatedProducts({
   return (
     <>
       <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
+        // КЛЮЧОВІ ЗМІНИ ТУТ:
+        // grid-cols-2 — мобільні
+        // small:grid-cols-3 — планшети
+        // medium:grid-cols-4 — десктоп (Porto Style)
+        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-4 gap-y-10"
         data-testid="products-list"
       >
         {products.map((p) => {
@@ -80,12 +86,15 @@ export default async function PaginatedProducts({
           )
         })}
       </ul>
+
       {totalPages > 1 && (
-        <Pagination
-          data-testid="product-pagination"
-          page={page}
-          totalPages={totalPages}
-        />
+        <div className="mt-12 flex justify-center border-t pt-6">
+          <Pagination
+            data-testid="product-pagination"
+            page={page}
+            totalPages={totalPages}
+          />
+        </div>
       )}
     </>
   )

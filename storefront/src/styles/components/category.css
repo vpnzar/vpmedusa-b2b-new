@@ -1,34 +1,102 @@
-.group:hover>a {
-    background-color: #0088cc !important;
-    color: white !important;
+/* 1. СІТКА ТОВАРІВ (Примусово 4 в ряд) */
+.porto-grid-wrapper ul,
+[data-testid="products-list-container"]>ul {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    /* 2 на мобільних */
+    gap: 15px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    list-style: none !important;
 }
 
-.group:hover>a i {
-    color: white !important;
-    opacity: 1 !important;
+@media (min-width: 1024px) {
+
+    .porto-grid-wrapper ul,
+    [data-testid="products-list-container"]>ul {
+        grid-template-columns: repeat(4, 1fr) !important;
+        /* Рівно 4 на десктопі */
+        gap: 20px !important;
+    }
 }
 
-.megamenu-panel {
+/* 2. КАРТКА ТОВАРУ */
+[data-testid="product-wrapper"] {
+    @apply flex flex-col bg-white border border-[#f4f4f4] transition-all duration-300 !important;
+    padding: 0 !important;
+    position: relative !important;
+}
+
+[data-testid="product-wrapper"]:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    border-color: #e7e7e7 !important;
+}
+
+/* 3. КОНТЕЙНЕР КАРТИНКИ (Робимо його квадратним) */
+[data-testid="product-wrapper"]>a>div:first-child,
+[data-testid="product-wrapper"]>div:first-child {
+    @apply relative w-full aspect-square bg-[#f4f4f4] flex items-center justify-center overflow-hidden !important;
+    height: 230px !important;
+    /* Фіксована висота вікна картинки */
+    margin-bottom: 0 !important;
+}
+
+/* ФІКС ГІГАНТСЬКИХ КАРТИНОК (Schneider Fix) */
+[data-testid="product-wrapper"] img {
+    @apply transition-transform duration-500 !important;
+    object-fit: contain !important;
+    /* Вписує розетку, не обрізаючи */
+    width: 85% !important;
+    /* Залишаємо відступи всередині сірого квадрата */
+    height: 85% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    padding: 10px !important;
+}
+
+[data-testid="product-wrapper"]:hover img {
+    transform: scale(1.08) !important;
+}
+
+/* 4. ІНФОРМАЦІЯ ПРО ТОВАР (Текст) */
+.porto-product-details,
+[data-testid="product-wrapper"]>div:last-child {
+    @apply p-4 flex flex-col items-center text-center !important;
+    /* Porto зазвичай центрує текст у категоріях */
+}
+
+/* Категорія (якщо є) */
+.porto-product-category {
+    @apply text-[10px] uppercase text-[#999] tracking-widest mb-1 !important;
+}
+
+/* Назва товару */
+[data-testid="product-title"] {
+    @apply text-[14px] font-semibold text-[#222] leading-[1.3] mb-2 !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 36px;
+    /* Щоб назви у два рядки не совали ціну */
+}
+
+/* Ціна */
+[data-testid="price"],
+.porto-product-price {
+    @apply text-[18px] font-bold text-[#222] !important;
+    margin-top: 5px !important;
+}
+
+/* 5. КНОПКА (Add to cart / View) */
+.porto-product-actions {
+    @apply w-full opacity-0 translate-y-2 transition-all duration-300 !important;
     position: absolute;
-    display: none;
+    bottom: 80px;
+    /* З’являється над текстом при наведенні */
 }
 
-.group:hover>.megamenu-panel {
-    display: block;
-}
-
-/* БІЛИЙ ТРИКУТНИК - ПРАВИЛЬНО */
-/* ✅ БІЛИЙ ТРИКУТНИК СТРІЛКА - ЦЕНТРОВАНИЙ */
-.group:hover .megamenu-panel::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10px;
-    /* 49px / 2 */
-    width: 0;
-    height: 0;
-    border-right: 12px solid white;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    z-index: 10000;
+[data-testid="product-wrapper"]:hover .porto-product-actions {
+    @apply opacity-100 translate-y-0 !important;
 }
