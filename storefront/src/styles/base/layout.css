@@ -7,11 +7,16 @@
 
 @layer base {
     html {
-        @apply w-full min-w-[320px] overflow-x-hidden;
+        @apply w-full min-w-[320px];
+        overflow: visible !important;
     }
 
+    body {
+        overflow-x: hidden;
+        /* Перенеси приховування горизонтального скролу сюди */
+        position: relative;
+    }
 
-    body,
     footer {
         font-family: var(--font-proxima-nova);
         width: 100%;
@@ -30,7 +35,7 @@
     }
 
     body {
-        padding-top: 60px;
+        padding-top: 10px;
     }
 }
 

@@ -32,3 +32,35 @@
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
 }
+
+/* Верхня панель магазину (Toolbar) */
+.porto-store-toolbar {
+    @apply flex items-center justify-end py-[10px] mb-[20px] border-b border-[#eee];
+}
+
+.porto-sort-label {
+    @apply text-[11px] font-bold uppercase text-[#777] tracking-widest;
+}
+
+.porto-select-custom {
+    @apply h-[34px] border border-[#ccc] text-[12px] font-bold uppercase px-[10px] text-[#222] focus:border-[#333] outline-none;
+}
+
+/* ПРИМУСОВИЙ ФІКС ДЛЯ STICKY */
+html,
+body {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    height: auto !important;
+}
+
+/* Якщо потрібен скрол тільки для body, робимо так: */
+html {
+    overflow: visible !important;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}

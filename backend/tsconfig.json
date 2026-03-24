@@ -7,7 +7,7 @@
   },
   "include": [
     "**/*"
-  ],
+, "../medusa-loader/import-data.js"  ],
   "exclude": [
     "node_modules",
     ".medusa/server",

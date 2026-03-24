@@ -20,3 +20,101 @@
 @import "./base/layout.css";
 @import "./components/header.css";
 @import "./components/megamenu.css";
+
+/* ДОДАЙ ЦІ ДВА РЯДКИ СЮДИ: */
+@import "./components/sidebar.css";
+@import "./components/category.css";
+
+@layer components {
+
+
+    .content-container {
+        /* Porto працює на ширині 1200px */
+        @apply max-w-[1240px] mx-auto px-5 w-full;
+    }
+
+    /* 1. Адаптація контейнера під Porto (1170px-1200px) */
+    .porto-container {
+        @apply max-w-[1200px] mx-auto px-4 w-full;
+    }
+
+    /* 2. Стилізація скролбару (в Porto він тонкий і сірий) */
+    .porto-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .porto-scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded-full;
+    }
+
+    /* 3. Кастомні класи для хедера, яких точно немає в стандартній Medusa */
+    .header-shadow {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Швидкий фікс для іконок, щоб вони завжди були центровані */
+    .icon-center {
+        @apply flex items-center justify-center;
+    }
+
+    /* Анімація для кнопок як у Porto */
+    .btn-porto-transition {
+        @apply transition-all duration-300 ease-in-out hover:-translate-y-0.5;
+    }
+
+    /* Виправляємо те, що логотип не відображається */
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* 4. Кольори Porto (додай у root, якщо хочеш використовувати змінні) */
+:root {
+    --porto-primary: #0088cc;
+    --porto-primary-dark: #0077b3;
+    --porto-secondary: #222529;
+}
+
+/* Контейнер Porto */
+.porto-container {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+/* Активний пункт меню жовтим (якщо хочеш виділити акції) */
+.active-yellow {
+    color: #f9d759 !important;
+}
+
+/* Шрифти Poppins як у твоїх стилях */
+nav {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Стилізація кнопок та посилань */
+nav a {
+    position: relative;
+}
+
+/* Ефект підкреслення при наведенні (блакитний) */
+/* Виправлений ефект підкреслення */
+nav a:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    display: block;
+    background: rgb(249 215 89);
+    transition: width .3s ease;
+    /* ТУТ ЗМІНИ: */
+    left: 0;
+    bottom: -2px;
+    /* Опускаємо лінію під текст */
+}
+
+nav a:hover:after {
+    width: 100%;
+}

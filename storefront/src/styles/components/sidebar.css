@@ -1,41 +1,49 @@
-@layer components {
-    .side-category-container {
-        @apply flex flex-col p-0 divide-y divide-neutral-200;
-    }
+/* src/styles/components/sidebar.css */
 
-    .side-category-header {
-        @apply flex justify-between items-center p-3;
-    }
 
-    .side-category-title {
-        @apply text-sm font-medium;
-    }
 
-    .side-category-clear-link {
-        @apply text-xs text-neutral-500 hover:text-neutral-700;
-    }
+.porto-sidebar {
+    background: #fff;
+    border: 1px solid #e7e7e7;
+    padding: 20px;
+}
 
-    .side-category-list {
-        @apply flex flex-col gap-3 text-sm p-3 text-neutral-500;
-    }
+.porto-sidebar h3 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #222;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    letter-spacing: 0.05em;
+}
 
-    .side-category-item {
-        @apply flex items-center gap-2 mb-2;
-    }
+.porto-sidebar label {
+    font-size: 13px;
+    color: #666;
+    transition: color 0.2s;
+    cursor: pointer;
+}
 
-    .side-category-toggle-btn {
-        @apply flex items-center gap-2 hover:text-neutral-700;
-    }
+.porto-sidebar label:hover {
+    color: #0088cc;
+    /* Фірмовий блакитний Porto */
+}
 
-    .side-category-link {
-        @apply flex gap-2 items-center hover:text-neutral-700;
-    }
+/* Фільтри сайдбару */
+/* Робимо сайдбар липким */
+.porto-sidebar-box {
+    @apply sticky top-[120px] self-start !important;
+    /* Прибираємо подвійні рамки, якщо вони є */
+    border: 1px solid #e7e7e7 !important;
+    box-shadow: none !important;
+}
 
-    .side-category-leaf-link {
-        @apply flex gap-2 items-center hover:text-neutral-700 text-start hover:cursor-pointer;
-    }
+.porto-sidebar-title {
+    @apply text-[14px] font-bold uppercase text-[#222] border-b border-[#eee] pb-[10px] mb-[15px] tracking-[0.05em];
+}
 
-    .side-category-icon {
-        @apply h-3 mx-1;
-    }
+.porto-filter-item {
+    @apply text-[13px] text-[#666] hover:text-[#0088cc] cursor-pointer transition-colors duration-200;
 }
