@@ -1,10 +1,9 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getCategoryByHandle } from "@lib/data/categories"
+import { getCategoryByHandle, listCategories } from "@lib/data/categories"
 import { StoreTemplate } from "@modules/store/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
-// У Next.js 15 params та searchParams — це Promise
 type Props = {
   params: Promise<{ category: string[]; countryCode: string }>
   searchParams: Promise<{
@@ -13,33 +12,55 @@ type Props = {
   }>
 }
 
+/**
+ * ЦЕ ТОЙ КОД, ЯКИЙ «ВИПАДАВ»: 
+ * Допомагає Next.js зрозуміти всі існуючі шляхи категорій при збірці
+ */
+export async function generateStaticParams() {
+  const product_categories = await listCategories()
+
+  if (!product_categories) {
+    return []
+  }
+
+  return product_categories.map((category) => ({
+    category: category.handle.split("/"),
+  }))
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  const data = await getCategoryByHandle(params.category).catch(() => null)
+  // Беремо останній елемент масиву (наприклад 'elektroinstrument' з ['ua', 'elektroinstrument'])
+  const handle = params.category[params.category.length - 1]
 
-  const category = Array.isArray(data) ? data[0] : (data as any)?.product_categories?.[0] || data
+  const data = (await getCategoryByHandle([handle]).catch(() => null)) as any
+  const category = data?.product_categories?.[0]
 
-  if (!category) notFound()
+  if (!category) return notFound()
 
   return {
     title: `${category.name} | Porto B2B`,
-    description: category.description,
+    description: category.description || `Купити ${category.name} в нашому магазині`,
   }
 }
 
 export default async function CategoryPage(props: Props) {
-  // Обов'язково додаємо await для params та searchParams
   const params = await props.params
   const searchParams = await props.searchParams
-
   const { sortBy, page } = searchParams
 
-  const data = await getCategoryByHandle(params.category).catch(() => null)
+  // Фільтруємо масив, щоб виключити випадкове потрапляння 'categories' в шлях
+  const cleanCategoryArray = params.category.filter(c => c !== "categories")
+  const handle = cleanCategoryArray[cleanCategoryArray.length - 1]
 
-  // Універсальна перевірка на структуру даних Medusa
-  const category = Array.isArray(data) ? data[0] : (data as any)?.product_categories?.[0] || data
+  if (!handle) return notFound()
 
-  if (!category) notFound()
+  const data = (await getCategoryByHandle([handle]).catch(() => null)) as any
+  const category = data?.product_categories?.[0]
+
+  if (!category) {
+    return notFound()
+  }
 
   return (
     <StoreTemplate

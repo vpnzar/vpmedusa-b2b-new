@@ -4,98 +4,62 @@ import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
-// Для 4 колонок краще ставити ліміт, кратний 4 (наприклад, 12 або 16)
-const PRODUCT_LIMIT = 12
-
-type PaginatedProductsParams = {
-  limit: number
-  collection_id?: string[]
-  category_id?: string[]
-  id?: string[]
-  order?: string
-}
-
 export default async function PaginatedProducts({
   sortBy,
   page,
+  countryCode,
   collectionId,
   categoryId,
   productsIds,
-  countryCode,
 }: {
   sortBy?: SortOptions
   page: number
+  countryCode: string
   collectionId?: string
   categoryId?: string
   productsIds?: string[]
-  countryCode: string
 }) {
-  const queryParams: PaginatedProductsParams = {
-    limit: PRODUCT_LIMIT, // Використовуємо константу
-  }
-
-  if (collectionId) {
-    queryParams["collection_id"] = [collectionId]
-  }
-
-  if (categoryId) {
-    queryParams["category_id"] = [categoryId]
-  }
-
-  if (productsIds) {
-    queryParams["id"] = productsIds
-  }
-
-  // Налаштування сортування
-  if (sortBy) {
-    queryParams["order"] = sortBy
-  }
-
   const region = await getRegion(countryCode)
+  if (!region) return null
 
-  if (!region) {
-    return null
+  // Використовуємо Record<string, any>, щоб TS не сварився на назви полів Medusa
+  const queryParams: Record<string, any> = {
+    limit: 12,
   }
 
-  let {
-    response: { products, count },
-  } = await listProductsWithSort({
+  if (collectionId) queryParams["collection_id"] = [collectionId]
+  if (categoryId) queryParams["category_id"] = [categoryId]
+  if (productsIds) queryParams["id"] = productsIds
+  if (sortBy) queryParams["order"] = sortBy
+
+  const { response: { products, count } } = await listProductsWithSort({
     page,
-    queryParams,
+    queryParams: queryParams as any,
     sortBy,
     countryCode,
   })
 
-  const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+  const totalPages = Math.ceil(count / 12)
 
   return (
-    <>
-      <ul
-        // КЛЮЧОВІ ЗМІНИ ТУТ:
-        // grid-cols-2 — мобільні
-        // small:grid-cols-3 — планшети
-        // medium:grid-cols-4 — десктоп (Porto Style)
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-4 gap-y-10"
-        data-testid="products-list"
-      >
-        {products.map((p) => {
-          return (
-            <li key={p.id}>
-              <ProductPreview product={p} region={region} />
-            </li>
-          )
-        })}
+    <div className="w-full">
+      {/* СІТКА: 
+          - gap-3 робить відступи меншими (як у Porto)
+          - lg:grid-cols-4 ПРИМУСОВО робить 4 колонки
+      */}
+      <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
+        {products.map((p) => (
+          <li key={p.id} className="flex justify-center">
+            <ProductPreview product={p} region={region} />
+          </li>
+        ))}
       </ul>
 
       {totalPages > 1 && (
-        <div className="mt-12 flex justify-center border-t pt-6">
-          <Pagination
-            data-testid="product-pagination"
-            page={page}
-            totalPages={totalPages}
-          />
+        <div className="mt-10 flex justify-center border-t border-[#e7e7e7] pt-6">
+          <Pagination page={page} totalPages={totalPages} />
         </div>
       )}
-    </>
+    </div>
   )
 }

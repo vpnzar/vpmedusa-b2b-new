@@ -13,7 +13,7 @@ const Navbar = () => {
                 <div className="flex items-stretch">
 
                     <LocalizedClientLink
-                        href="/store"
+                        href="/catalog"
                         className="group bg-[#014a9c] hover:bg-[#003e83] transition-colors flex items-center px-6 cursor-pointer min-w-[240px] h-full overflow-hidden no-underline"
                     >
                         <div className="flex items-center justify-center gap-3 w-full h-full">

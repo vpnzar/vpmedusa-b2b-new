@@ -16,34 +16,33 @@ export const StoreTemplate = ({
   countryCode: string
   category?: HttpTypes.StoreProductCategory
 }) => {
+  // Визначаємо номер сторінки
   const pageNumber = page ? parseInt(page) : 1
 
   return (
-    // 1. Головний контейнер з відступами та центруванням (Porto style)
     <div className="flex flex-col py-6 pb-12 bg-white">
-      <div className="content-container flex flex-col small:flex-row gap-x-8">
+      {/* Контейнер Porto: обмежена ширина, центрування */}
+      <div className="content-container flex flex-col small:flex-row gap-x-6">
 
-        {/* 2. ЛІВИЙ САЙДБАР (Sidebar Left - 25% ширини) */}
-        <aside className="w-full small:w-[25%] shrink-0">
+        {/* ЛІВИЙ САЙДБАР (20% ширини) */}
+        <aside className="w-full small:w-[20%] shrink-0">
           <div className="sticky top-[100px]">
-            {/* Тут твій RefinementList (фільтри, ціна, категорії) */}
             <RefinementList sortBy={sortBy || "created_at"} />
           </div>
         </aside>
 
-        {/* 3. ОСНОВНИЙ КОНТЕНТ (3 колонки товарів - 75% ширини) */}
-        <main className="w-full">
+        {/* ОСНОВНИЙ КОНТЕНТ (80% ширини) */}
+        <main className="w-full small:w-[80%]">
           <div className="flex flex-col w-full">
 
-            {/* Заголовок та сортування */}
+            {/* Заголовок категорії або Магазину */}
             <div className="flex items-center justify-between mb-6 border-b pb-4">
               <h1 className="text-xl font-bold uppercase text-[#222529]">
-                {category ? category.name : "Магазин"}
+                {category ? category.name : "Каталог"}
               </h1>
-              {/* Тут можна додати кількість знайдених товарів */}
             </div>
 
-            {/* СІТКА ТОВАРІВ */}
+            {/* Сітка товарів (буде 4 колонки завдяки PaginatedProducts) */}
             <Suspense fallback={<SkeletonProductGrid />}>
               <PaginatedProducts
                 sortBy={sortBy || "created_at"}

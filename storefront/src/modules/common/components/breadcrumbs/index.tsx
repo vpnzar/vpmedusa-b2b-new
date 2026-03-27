@@ -1,52 +1,65 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
-// Оновлюємо мапу: тепер у нас CATALOG замість STORE
 const staticNames: Record<string, string> = {
     catalog: "КАТАЛОГ",
     cart: "КОШИК",
     account: "ПРОФІЛЬ",
+    categories: "КАТЕГОРІЇ",
 }
 
 const Breadcrumbs = () => {
     const pathname = usePathname()
     const [resolvedNames, setResolvedNames] = useState<Record<string, string>>({})
 
-    // Сегменти без мовних префіксів
-    const segments = pathname
-        .split("/")
-        .filter(s => s && !["uk", "en", "ua"].includes(s))
+    // Використовуємо useMemo, щоб сегменти не перераховувалися постійно
+    const segments = useMemo(() => {
+        return pathname
+            .split("/")
+            .filter(s => s && !["uk", "en", "ua"].includes(s))
+    }, [pathname])
 
     useEffect(() => {
+        let isMounted = true; // Запобігає оновленню стану, якщо компонент розмонтовано
+
         const fetchNames = async () => {
-            // Шукаємо сегменти, назви яких ми ще не знаємо
             const unknownSegments = segments.filter(s => !staticNames[s] && !resolvedNames[s])
 
             for (const handle of unknownSegments) {
                 try {
+                    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+                    if (!backendUrl) continue
+
                     const response = await fetch(
-                        `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/product-categories?handle=${handle}`,
+                        `${backendUrl}/store/product-categories?handle=${handle}`,
                         {
-                            headers: { "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "" }
+                            headers: {
+                                "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+                                "Content-Type": "application/json"
+                            }
                         }
-                    )
-                    const data = await response.json()
-                    // Medusa 2.0 повертає масив product_categories
-                    const category = data.product_categories?.[0]
-                    if (category) {
+                    ).catch(() => null) // Перехоплюємо помилку мережі відразу
+
+                    if (!response || !response.ok) continue
+
+                    const data = await response.json().catch(() => null)
+                    const category = data?.product_categories?.[0]
+
+                    if (isMounted && category) {
                         setResolvedNames(prev => ({ ...prev, [handle]: category.name.toUpperCase() }))
                     }
                 } catch (e) {
-                    console.error("Error fetching category name", e)
+                    console.warn("Breadcrumbs skip:", handle)
                 }
             }
         }
 
         fetchNames()
-    }, [pathname, segments.length]) // Додаємо залежність від довжини сегментів
+        return () => { isMounted = false }
+    }, [segments])
 
     if (segments.length === 0) return null
 
@@ -58,15 +71,13 @@ const Breadcrumbs = () => {
                 </LocalizedClientLink>
 
                 {segments.map((segment, index) => {
-                    // ТУТ КЛЮЧОВА ЗМІНА: 
-                    // Оскільки URL пласкі, посилання — це просто назва сегмента
-                    const href = `/${segment}`
-
+                    const path = segments.slice(0, index + 1).join("/")
+                    const href = `/${path}`
                     const isLast = index === segments.length - 1
                     const displayName = resolvedNames[segment] || staticNames[segment] || segment.replace(/-/g, " ").toUpperCase()
 
                     return (
-                        <div key={segment} className="flex items-center gap-2">
+                        <div key={path} className="flex items-center gap-2">
                             <span className="text-[#ccc] font-normal">/</span>
                             {isLast ? (
                                 <span className="text-[#222529]">{displayName}</span>
