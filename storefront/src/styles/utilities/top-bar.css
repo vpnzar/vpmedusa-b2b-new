@@ -9,3 +9,9 @@
 .top-bar-select {
     @apply bg-transparent border-none py-1 pr-6 pl-2;
 }
+
+/* Це прибере подвійну "Головна" і не зачепить твої SmartBreadcrumbs */
+nav.flex.items-center.gap-2.mb-6.text-sm>a:first-of-type,
+nav.flex.items-center.gap-2.mb-6.text-sm>a:first-of-type+span {
+    display: none !important;
+}

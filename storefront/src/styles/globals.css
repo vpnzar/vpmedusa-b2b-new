@@ -21,9 +21,12 @@
 @import "./components/header.css";
 @import "./components/megamenu.css";
 
-/* ДОДАЙ ЦІ ДВА РЯДКИ СЮДИ: */
+
 @import "./components/sidebar.css";
 @import "./components/category.css";
+@import "./utilities/top-bar.css";
+@import "./utilities/fixes.css";
+/* Наш новий файл */
 
 @layer components {
 

@@ -1,97 +1,76 @@
 "use client"
 
-import { usePathname } from "next/navigation"
-import { useEffect, useState, useMemo } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Popover, Transition } from "@headlessui/react"
+import { ChevronDown } from "@medusajs/icons"
+import { Fragment } from "react"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { clx } from "@medusajs/ui"
+import { HttpTypes } from "@medusajs/types"
 
-const staticNames: Record<string, string> = {
-    catalog: "КАТАЛОГ",
-    cart: "КОШИК",
-    account: "ПРОФІЛЬ",
-    categories: "КАТЕГОРІЇ",
-}
+export default function Breadcrumbs({
+    category,
+    allCategories
+}: {
+    category: any,
+    allCategories: HttpTypes.StoreProductCategory[]
+}) {
+    const router = useRouter()
+    const searchParams = useSearchParams()
 
-const Breadcrumbs = () => {
-    const pathname = usePathname()
-    const [resolvedNames, setResolvedNames] = useState<Record<string, string>>({})
+    const activeSeries = searchParams.get("series")
 
-    // Використовуємо useMemo, щоб сегменти не перераховувалися постійно
-    const segments = useMemo(() => {
-        return pathname
-            .split("/")
-            .filter(s => s && !["uk", "en", "ua"].includes(s))
-    }, [pathname])
+    const path: any[] = []
+    let curr = category
+    while (curr) {
+        path.unshift(curr)
+        curr = curr.parent_category
+    }
 
-    useEffect(() => {
-        let isMounted = true; // Запобігає оновленню стану, якщо компонент розмонтовано
-
-        const fetchNames = async () => {
-            const unknownSegments = segments.filter(s => !staticNames[s] && !resolvedNames[s])
-
-            for (const handle of unknownSegments) {
-                try {
-                    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-                    if (!backendUrl) continue
-
-                    const response = await fetch(
-                        `${backendUrl}/store/product-categories?handle=${handle}`,
-                        {
-                            headers: {
-                                "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
-                                "Content-Type": "application/json"
-                            }
-                        }
-                    ).catch(() => null) // Перехоплюємо помилку мережі відразу
-
-                    if (!response || !response.ok) continue
-
-                    const data = await response.json().catch(() => null)
-                    const category = data?.product_categories?.[0]
-
-                    if (isMounted && category) {
-                        setResolvedNames(prev => ({ ...prev, [handle]: category.name.toUpperCase() }))
-                    }
-                } catch (e) {
-                    console.warn("Breadcrumbs skip:", handle)
-                }
-            }
-        }
-
-        fetchNames()
-        return () => { isMounted = false }
-    }, [segments])
-
-    if (segments.length === 0) return null
+    const getSiblings = (parentId: string | null) =>
+        allCategories.filter(c => c.parent_category_id === parentId)
 
     return (
-        <div className="bg-[#f4f4f4] border-b border-gray-200">
-            <div className="porto-container py-2.5 flex items-center gap-2 text-[11px] uppercase font-bold tracking-tight">
-                <LocalizedClientLink href="/" className="text-[#999] hover:text-[#0155b5] transition-colors">
-                    ГОЛОВНА
-                </LocalizedClientLink>
+        <nav className="flex items-center gap-2 mb-6 text-sm text-ui-fg-subtle flex-wrap">
+            <LocalizedClientLink href="/" className="hover:text-black">Головна</LocalizedClientLink>
 
-                {segments.map((segment, index) => {
-                    const path = segments.slice(0, index + 1).join("/")
-                    const href = `/${path}`
-                    const isLast = index === segments.length - 1
-                    const displayName = resolvedNames[segment] || staticNames[segment] || segment.replace(/-/g, " ").toUpperCase()
-
-                    return (
-                        <div key={path} className="flex items-center gap-2">
-                            <span className="text-[#ccc] font-normal">/</span>
-                            {isLast ? (
-                                <span className="text-[#222529]">{displayName}</span>
-                            ) : (
-                                <LocalizedClientLink href={href} className="text-[#999] hover:text-[#0155b5] transition-colors">
-                                    {displayName}
-                                </LocalizedClientLink>
-                            )}
-                        </div>
-                    )
-                })}
-            </div>
-        </div>
+            {path.map((segment, index) => (
+                /* Використовуємо id, а якщо його нема (як у нашому випадку) — handle або index */
+                <Fragment key={segment.id || segment.handle || index}>
+                    <span className="text-ui-fg-muted">/</span>
+                    <Popover className="relative">
+                        <Popover.Button className="flex items-center gap-1 font-medium text-ui-fg-base focus:outline-none">
+                            {segment.name} <ChevronDown className="w-3 h-3" />
+                        </Popover.Button>
+                        <Transition
+                            as={Fragment}
+                            enter="transition ease-out duration-200"
+                            enterFrom="opacity-0 translate-y-1"
+                            enterTo="opacity-100 translate-y-0"
+                            leave="transition ease-in duration-150"
+                            leaveFrom="opacity-100 translate-y-0"
+                            leaveTo="opacity-0 translate-y-1"
+                        >
+                            <Popover.Panel className="absolute z-50 mt-2 w-56 bg-white border border-ui-border-base rounded-md shadow-xl p-2">
+                                <div className="flex flex-col gap-1">
+                                    {getSiblings(segment.parent_category_id).map((sib: any) => (
+                                        <button
+                                            key={sib.id}
+                                            onClick={() => router.push(`/${sib.handle}`)}
+                                            className={clx(
+                                                "text-left px-3 py-2 rounded-md hover:bg-ui-bg-subtle transition-colors",
+                                                sib.id === segment.id && "bg-ui-bg-disabled font-bold"
+                                            )}
+                                        >
+                                            {sib.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </Popover.Panel>
+                        </Transition>
+                    </Popover>
+                </Fragment>
+            ))}
+        </nav>
     )
 }
-
-export default Breadcrumbs

@@ -1,6 +1,6 @@
 import { Metadata } from "next"
-import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import { StoreTemplate } from "@modules/store/templates"
+// Імпортуємо наш новий шаблон прямо
+import BaseProductsTemplate from "@modules/store/templates/base-products-template"
 
 export const metadata: Metadata = {
   title: "Каталог | Магазин",
@@ -10,20 +10,23 @@ export const metadata: Metadata = {
 type Props = {
   params: Promise<{ countryCode: string }>
   searchParams: Promise<{
-    sortBy?: SortOptions
+    sortBy?: any // Ставимо any, щоб TS не заважав жити
     page?: string
   }>
 }
 
 export default async function CatalogPage(props: Props) {
   const { countryCode } = await props.params
-  const { sortBy, page } = await props.searchParams
+  const searchParams = await props.searchParams // Витягуємо всі параметри
 
   return (
-    <StoreTemplate
-      sortBy={sortBy}
-      page={page}
+    <BaseProductsTemplate
+      sortBy={searchParams.sortBy}
+      page={searchParams.page}
       countryCode={countryCode}
+      // Передаємо інші параметри, якщо вони потрібні шаблону
+      viewMode={(searchParams as any).view || "grid"}
+      limit={(searchParams as any).limit || "12"}
     />
   )
 }

@@ -206,7 +206,10 @@ async function run() {
                 const search = await api.get(`/admin/products?q=${encodeURIComponent(sku)}`);
                 const existing = search.data.products?.find(p => 
                     p.variants.some(v => v.sku === sku)
-                );
+              );
+              
+                     // --- ДОДАЙ ЦЕЙ ЛОГ ПЕРЕД ЗАПИСОМ ---
+                     console.log(`🔍 Товар ${sku}: Категорія ID = ${finalCatId}`);
 
                 if (existing) {
                     console.log(`🔄 Оновлення: ${sku}`);

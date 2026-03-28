@@ -6,7 +6,6 @@ import { StoreCartShippingOption } from "@medusajs/types"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
-import Breadcrumbs from "@modules/common/components/breadcrumbs"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
 
 export const metadata: Metadata = {
@@ -37,8 +36,6 @@ export default async function PageLayout(props: PageLayoutProps) {
     <>
       <Nav />
 
-      {/* Глобальні хлібні крихти */}
-      <Breadcrumbs />
 
       {customer && cart && (
         <CartMismatchBanner customer={customer} cart={cart} />

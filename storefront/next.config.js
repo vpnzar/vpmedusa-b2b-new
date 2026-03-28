@@ -29,7 +29,6 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "download.schneider-electric.com",
-        pathname: "/**",
       },
       {
         protocol: "http",

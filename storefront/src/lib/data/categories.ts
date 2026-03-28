@@ -14,8 +14,9 @@ export const listCategories = async (query?: Record<string, any>) => {
       "/store/product-categories",
       {
         query: {
+          // ПРИБРАЛИ *products. Тепер запит буде легким.
           fields:
-            "*category_children, *products, *parent_category, *parent_category.parent_category",
+            "id,name,handle,description,rank,parent_category_id,*category_children,*parent_category,*parent_category.parent_category",
           limit,
           ...query,
         },
@@ -38,7 +39,9 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
       `/store/product-categories`,
       {
         query: {
-          fields: "*category_children, *products",
+          // ТУТ ТАКОЖ ПРИБРАЛИ *products. 
+          // Нам потрібні тільки дані про саму категорію (назва, опис).
+          fields: "id,name,handle,description,rank,parent_category_id,*category_children",
           handle,
         },
         next,

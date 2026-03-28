@@ -1,119 +1,117 @@
-import { Fragment } from "react"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
-
-import InteractiveLink from "@modules/common/components/interactive-link"
+import SmartBreadcrumbs from "@modules/common/components/breadcrumbs"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import RefinementList from "@modules/store/components/refinement-list"
-import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
+import SortSelect from "../components/sort-select"
+import ViewModeControl from "../components/view-mode-control"
 
 export default function CategoryTemplate({
   category,
+  allCategories,
   sortBy,
   page,
   countryCode,
+  searchParams,
 }: {
-  category: HttpTypes.StoreProductCategory
-  sortBy?: SortOptions
+  category: any
+  allCategories: HttpTypes.StoreProductCategory[]
+  sortBy?: string
   page?: string
   countryCode: string
+  searchParams?: any
 }) {
+  // 1. Витягуємо параметри виду та ліміту
+  const viewMode = (searchParams?.view as "grid" | "list" | "price") || "grid"
+  const limit = searchParams?.limit || "12"
+
   const pageNumber = page ? parseInt(page) : 1
-  const sort = sortBy || "created_at"
+
+  // ФІКС: Примусово кажемо, що це SortOptions через as any
+  const sort = (sortBy || "created_at") as any
 
   if (!category || !countryCode) notFound()
 
-  // 1. Збираємо батьків у правильному порядку (від старшого до молодшого)
-  const parents = [] as HttpTypes.StoreProductCategory[]
-  const getParents = (cat: any) => {
-    if (cat.parent_category) {
-      parents.unshift(cat.parent_category) // додаємо в початок масиву
-      getParents(cat.parent_category)
-    }
-  }
-  getParents(category)
-
   return (
-    <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
-      data-testid="category-container"
-    >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
+    <div className="flex flex-col py-6 content-container bg-white">
+      <div className="flex flex-col small:flex-row gap-x-8">
 
-      <div className="w-full">
-        {/* 2. Оновлений блок Breadcrumbs */}
-        <nav className="flex items-center gap-2 mb-6 text-sm text-ui-fg-subtle flex-wrap">
-          <LocalizedClientLink href="/" className="hover:text-black">
-            Головна
-          </LocalizedClientLink>
-          <span>/</span>
-          <LocalizedClientLink href="/store" className="hover:text-black">
-            Каталог
-          </LocalizedClientLink>
+        {/* Фільтри зліва */}
+        <aside className="w-full small:w-[250px] shrink-0">
+          <RefinementList sortBy={sort} />
+        </aside>
 
-          {parents.map((parent) => (
-            <Fragment key={parent.id}>
-              <span>/</span>
-              <LocalizedClientLink
-                className="hover:text-black"
-                // ТУТ МІНЯЄМО: прибираємо /categories/
-                href={`/${parent.handle}`}
-              >
-                {parent.name}
-              </LocalizedClientLink>
-            </Fragment>
-          ))}
-          <span>/</span>
-          <span className="text-ui-fg-base font-medium">{category.name}</span>
-        </nav>
+        <div className="w-full">
+          {/* Вертикальні крихти */}
+          <SmartBreadcrumbs category={category} allCategories={allCategories} />
 
-        {/* Заголовок категорії */}
-        <div className="flex flex-row mb-8 text-3xl-semi gap-4">
-          <h1 data-testid="category-page-title">{category.name}</h1>
-        </div>
+          <h1 className="text-[24px] font-bold uppercase text-[#222529] mb-4">
+            {category.name}
+          </h1>
 
-        {category.description && (
-          <div className="mb-8 text-base-regular text-ui-fg-subtle">
-            <p>{category.description}</p>
-          </div>
-        )}
+          <div className="flex flex-col gap-4 mb-8">
+            <div className="flex items-center justify-between border-b border-ui-border-base pb-4">
 
-        {/* Список підкатегорій (якщо є) */}
-        {category.category_children && category.category_children.length > 0 && (
-          <div className="mb-8 p-4 bg-ui-bg-subtle rounded-lg">
-            <span className="text-xs uppercase text-ui-fg-muted mb-3 block">Підкатегорії:</span>
-            <ul className="grid grid-cols-1 small:grid-cols-3 gap-4">
-              {category.category_children?.map((c) => (
-                <li key={c.id}>
-                  <LocalizedClientLink
-                    href={`/${c.handle}`} // ТУТ ТЕЖ ПРИБИРАЄМО /categories/
-                    className="text-base hover:text-ui-fg-interactive underline decoration-ui-border-strong"
+              {/* Кнопки перемикання виду */}
+              <ViewModeControl currentView={viewMode} />
+
+              <div className="flex items-center gap-x-6">
+                <SortSelect sortBy={sort} />
+
+                {/* Селект кількості товарів */}
+                <div className="hidden small:flex items-center gap-x-2">
+                  <span className="text-[10px] uppercase text-ui-fg-muted font-bold whitespace-nowrap font-sans">
+                    Показати:
+                  </span>
+                  <select
+                    className="text-sm font-medium bg-transparent border-none focus:ring-0 cursor-pointer py-0 outline-none font-sans"
+                    defaultValue={limit}
                   >
-                    {c.name}
-                  </LocalizedClientLink>
-                </li>
-              ))}
-            </ul>
+                    <option value="12">12</option>
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
 
-        <Suspense
-          fallback={
-            <SkeletonProductGrid
-              numberOfProducts={category.products?.length ?? 8}
+          {/* Швидкий вибір підкатегорій */}
+          {category.category_children && category.category_children.length > 0 && (
+            <div className="mb-8 p-5 bg-gray-50 rounded-lg border border-gray-100">
+              <span className="text-[10px] uppercase tracking-widest text-ui-fg-muted mb-4 block font-bold font-sans">
+                ШВИДКИЙ ВИБІР:
+              </span>
+              <ul className="flex flex-wrap gap-2">
+                {category.category_children?.map((c: any) => (
+                  <li key={c.id}>
+                    <LocalizedClientLink
+                      href={`/${c.handle}`}
+                      className="px-4 py-1.5 bg-white border border-ui-border-base rounded-full text-sm hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm block font-medium"
+                    >
+                      {c.name}
+                    </LocalizedClientLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Список товарів */}
+          <Suspense fallback={<SkeletonProductGrid />}>
+            <PaginatedProducts
+              sortBy={sort}
+              page={pageNumber}
+              categoryId={category.id}
+              countryCode={countryCode}
+              viewMode={viewMode}
+              limit={parseInt(limit)}
             />
-          }
-        >
-          <PaginatedProducts
-            sortBy={sort}
-            page={pageNumber}
-            categoryId={category.id}
-            countryCode={countryCode}
-          />
-        </Suspense>
+          </Suspense>
+        </div>
       </div>
     </div>
   )

@@ -1,0 +1,5 @@
+/* Ховаємо тільки перше посилання "Головна" та розділювач після нього */
+nav.flex.items-center.gap-2.mb-6.text-sm>a:first-child,
+nav.flex.items-center.gap-2.mb-6.text-sm>a:first-child+span {
+    display: none !important;
+}

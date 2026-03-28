@@ -7,59 +7,107 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 export default async function PaginatedProducts({
   sortBy,
   page,
-  countryCode,
-  collectionId,
   categoryId,
-  productsIds,
+  collectionId,
+  typeId,
+  tagId,
+  id,
+  countryCode,
+  viewMode = "grid",
+  limit = 12,
 }: {
   sortBy?: SortOptions
   page: number
-  countryCode: string
-  collectionId?: string
   categoryId?: string
-  productsIds?: string[]
+  collectionId?: string
+  typeId?: string
+  tagId?: string
+  id?: string
+  countryCode: string
+  viewMode?: "grid" | "list" | "price"
+  limit?: number
 }) {
-  const region = await getRegion(countryCode)
-  if (!region) return null
+  const pageNumber = Number(page) || 1
 
-  // Використовуємо Record<string, any>, щоб TS не сварився на назви полів Medusa
-  const queryParams: Record<string, any> = {
-    limit: 12,
+  // Отримуємо region один раз тут
+  const region = await getRegion(countryCode)
+
+  if (!region) {
+    return null
   }
 
-  if (collectionId) queryParams["collection_id"] = [collectionId]
-  if (categoryId) queryParams["category_id"] = [categoryId]
-  if (productsIds) queryParams["id"] = productsIds
-  if (sortBy) queryParams["order"] = sortBy
+  const queryParams: any = {
+    limit: limit,
+  }
 
-  const { response: { products, count } } = await listProductsWithSort({
-    page,
-    queryParams: queryParams as any,
-    sortBy,
-    countryCode,
-  })
+  if (categoryId) queryParams["category_id"] = categoryId
+  if (collectionId) queryParams["collection_id"] = collectionId
+  if (typeId) queryParams["type_id"] = typeId
+  if (tagId) queryParams["tag_id"] = tagId
+  if (id) queryParams["id"] = id
 
-  const totalPages = Math.ceil(count / 12)
+  try {
+    const {
+      response: { products, count },
+    } = await listProductsWithSort({
+      page: pageNumber,
+      queryParams,
+      sortBy,
+      countryCode,
+    })
 
-  return (
-    <div className="w-full">
-      {/* СІТКА: 
-          - gap-3 робить відступи меншими (як у Porto)
-          - lg:grid-cols-4 ПРИМУСОВО робить 4 колонки
-      */}
-      <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
-        {products.map((p) => (
-          <li key={p.id} className="flex justify-center">
-            <ProductPreview product={p} region={region} />
-          </li>
-        ))}
-      </ul>
+    const totalPages = Math.ceil(count / limit)
 
-      {totalPages > 1 && (
-        <div className="mt-10 flex justify-center border-t border-[#e7e7e7] pt-6">
-          <Pagination page={page} totalPages={totalPages} />
+    if (products.length === 0) {
+      return (
+        <div className="py-20 text-center border-2 border-dashed border-gray-200">
+          <p className="text-gray-500 font-medium">У цій категорії поки немає товарів</p>
         </div>
-      )}
-    </div>
-  )
+      )
+    }
+
+    // ЛОГІКА КЛАСІВ ДЛЯ СІТКИ (Універсальна)
+    const listClassName =
+      viewMode === "grid"
+        ? "grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 w-full"
+        : "flex flex-col w-full gap-y-4"
+
+    return (
+      <>
+        <ul className={listClassName}>
+          {products.map((p) => (
+            <li key={p.id}>
+              <ProductPreview
+                product={p as any}
+                region={region}
+                viewMode={viewMode}
+              />
+            </li>
+          ))}
+        </ul>
+
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center">
+            <Pagination
+              data-testid="product-pagination"
+              page={pageNumber}
+              totalPages={totalPages}
+            />
+          </div>
+        )}
+      </>
+    )
+  } catch (error: any) {
+    const errorMessage = error?.message || "Unknown error occurred"
+    console.error("CRITICAL ERROR IN PAGINATED PRODUCTS:", errorMessage)
+
+    return (
+      <div className="py-20 text-center border-2 border-dashed border-red-200 bg-red-50">
+        <p className="text-red-600 font-bold uppercase tracking-widest">
+          Помилка завантаження товарів
+        </p>
+        <p className="text-sm text-red-400 mt-2">{errorMessage}</p>
+      </div>
+    )
+  }
 }
