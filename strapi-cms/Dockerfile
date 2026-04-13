@@ -1,11 +1,21 @@
-FROM node:18-alpine
-# Системні залежності
+FROM node:20-alpine
+
+# Системні залежності для Strapi
 RUN apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev vips-dev
+
 WORKDIR /srv/app
-# Копіюємо файли (вони вже мають там бути після кроку №1)
+
+# Копіюємо лише файли залежностей (це пришвидшує білд)
 COPY package*.json ./
-RUN npm install pg --legacy-peer-deps && npm install --legacy-peer-deps
+
+# Встановлюємо залежності
+RUN npm install --legacy-peer-deps
+
+# Копіюємо все інше
 COPY . .
-RUN npm run build
+
+# Виставляємо порт
 EXPOSE 1337
+
+# Запускаємо в режимі розробки (він сам збере адмінку при старті)
 CMD ["npm", "run", "develop"]

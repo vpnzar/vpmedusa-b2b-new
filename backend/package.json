@@ -32,6 +32,7 @@
     "@medusajs/medusa": "^2.13.3",
     "@medusajs/types": "^2.13.3",
     "@medusajs/utils": "^2.13.3",
+    "body-parser": "^2.2.2",
     "form-data": "^4.0.5",
     "jsonrpc-lite": "^2.2.0",
     "meilisearch": "^0.55.0",

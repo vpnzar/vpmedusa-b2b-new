@@ -6,7 +6,8 @@ export default defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     http: {
-      // Якщо змінна з .env порожня, підставиться http://localhost:3000
+      // ТУТ МИ ДОДАЄМО ЛІМІТ (10 МБ)
+          
       storeCors: process.env.STORE_CORS || "http://localhost:3000",
       adminCors: process.env.ADMIN_CORS || "http://localhost:7000,http://localhost:9000",
       authCors: process.env.AUTH_CORS || "http://localhost:3000,http://localhost:7000,http://localhost:9000",
@@ -15,9 +16,6 @@ export default defineConfig({
     }
   },
   modules: {
-    // МОДУЛЬ ODOO ВИДАЛЕНО — тут він більше не муляє очі
-    
-    // ФАЙЛОВИЙ МОДУЛЬ (для локального збереження картинок)
     [Modules.FILE]: {
       resolve: "@medusajs/medusa/file",
       options: {

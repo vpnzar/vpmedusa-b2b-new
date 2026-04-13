@@ -2,36 +2,18 @@ import type { StrapiApp } from '@strapi/strapi/admin';
 
 export default {
   config: {
-    locales: [
-      // 'ar',
-      // 'fr',
-      // 'cs',
-      // 'de',
-      // 'dk',
-      // 'es',
-      // 'he',
-      // 'id',
-      // 'it',
-      // 'ja',
-      // 'ko',
-      // 'ms',
-      // 'nl',
-      // 'no',
-      // 'pl',
-      // 'pt-BR',
-      // 'pt',
-      // 'ru',
-      // 'sk',
-      // 'sv',
-      // 'th',
-      // 'tr',
-      'uk',
-      // 'vi',
-      // 'zh-Hans',
-      // 'zh',
-    ],
+    locales: ['uk'],
+    translations: {
+      uk: {
+        "content-manager.plugin.name": "Менеджер контенту",
+        "app.components.LeftMenu.navbrand.title": "Панель управління",
+        "Auth.form.welcome.title": "Ласкаво просимо до Strapi!",
+        "Auth.form.welcome.subtitle": "Увійдіть у свій акаунт",
+      },
+    },
   },
+  // Додаємо тип StrapiApp для параметра app
   bootstrap(app: StrapiApp) {
-    console.log(app);
+    console.log("Admin app bootstrapped with Ukrainian locale");
   },
 };

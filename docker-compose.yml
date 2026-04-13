@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # 1. БАЗА (Твої оригінальні дані)
@@ -35,20 +34,28 @@ services:
     build:
       context: ./strapi-cms
       dockerfile: Dockerfile
+    # --- ДОДАЙ ЦЕЙ БЛОК ---
+    volumes:
+      - ./strapi-cms:/srv/app
+      - /srv/app/node_modules
+      - /srv/app/.tmp
+      - /srv/app/dist
+    # ----------------------
     depends_on:
       - medusa_db
     ports:
       - "1337:1337"
     environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
       - DATABASE_CLIENT=postgres
       - DATABASE_HOST=medusa_db
       - DATABASE_PORT=5432
       - DATABASE_NAME=strapi_db
       - DATABASE_USERNAME=medusa
       - DATABASE_PASSWORD=medusa
-      - JWT_SECRET=tobereplaced
-      - ADMIN_JWT_SECRET=tobereplaced
-      - APP_KEYS=key1,key2
+      - CLOUDINARY_NAME=dldvbmjnm
+      - CLOUDINARY_KEY=427993629986674
+      - CLOUDINARY_SECRET=CHVmr1ubrnYsznx6-ZQJDdT7gOY
     env_file:
       - ./strapi-cms/.env
 
