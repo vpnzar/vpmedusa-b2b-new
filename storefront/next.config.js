@@ -12,6 +12,7 @@ const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
+  output: "standalone", // ЦЕ ВКЛЮЧАЄ ПРАВИЛЬНИЙ PRODUCTION РЕЖИМ
   reactStrictMode: true,
   logging: {
     fetches: {
@@ -32,19 +33,21 @@ const nextConfig = {
       },
       {
         protocol: "http",
-        hostname: "localhost",
+        hostname: "127.0.0.1",
+        port: "1337",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "192.168.0.115",
         port: "1337",
         pathname: "/**",
       },
       {
         protocol: "http",
         hostname: "localhost",
-        port: "9000",
+        port: "1337",
         pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "localhost",
       },
       {
         protocol: "https",

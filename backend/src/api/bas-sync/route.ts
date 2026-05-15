@@ -1,6 +1,25 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
+async function getStrapiData(sku: string) {
+  try {
+    const safeArticle = sku.trim(); // Не міняємо регістр, якщо в Strapi він різний
+    
+    // Замінюємо $eq на $contains (шукає входження, ігноруючи деякі нюанси)
+    const url = `http://127.0.0.1:1337/api/products?filters[article][$contains]=${safeArticle}&publicationState=preview&populate=*`;
+    
+    const response = await fetch(url);
+    const json: any = await response.json();
+    
+    if (json.data && json.data.length > 0) {
+      return json.data[0]; // Повертаємо перший знайдений об'єкт
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
+}
+
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   const productModule = req.scope.resolve(Modules.PRODUCT)
   const pricingModule = req.scope.resolve(Modules.PRICING)
@@ -101,11 +120,13 @@ const remoteQuery = req.scope.resolve(ContainerRegistrationKeys.REMOTE_QUERY)
     }
 
     try {
+      // ОГОЛОШУЄМО ТІЛЬКИ ТУТ (один раз!)
+      const strapiProduct = await getStrapiData(safeSku);
+
       let variant = variantMap.get(safeSku)
       let productId: string
       const categoryId = await ensureCategoryTree(item.category)
 
-      // 1. СТВОРЕННЯ АБО ПОШУК ТОВАРУ + КАНАЛ ПРОДАЖУ
       // 1. СТВОРЕННЯ АБО ПОШУК ТОВАРУ
       if (!variant) {
         const createdProducts = await productModule.createProducts([{
@@ -114,7 +135,6 @@ const remoteQuery = req.scope.resolve(ContainerRegistrationKeys.REMOTE_QUERY)
           subtitle: item.brand,
           status: "published" as any,
           category_ids: categoryId ? [categoryId] : [],
-          // sales_channels видалено звідси, бо ProductModule їх не приймає
           options: [{ title: "Default", values: ["Default"] }],
           variants: [{
             title: "Default",
@@ -126,7 +146,6 @@ const remoteQuery = req.scope.resolve(ContainerRegistrationKeys.REMOTE_QUERY)
 
         productId = createdProducts[0].id
         
-        // Створюємо зв'язок з Sales Channel через Remote Link
         await remoteLink.create({
           [Modules.PRODUCT]: { product_id: productId },
           ["sales_channel"]: { sales_channel_id: SALES_CHANNEL_ID }
@@ -137,28 +156,43 @@ const remoteQuery = req.scope.resolve(ContainerRegistrationKeys.REMOTE_QUERY)
       } else {
         productId = variant.product.id
         
-        // Для існуючих товарів також примусово оновлюємо зв'язок (якщо його немає)
         await remoteLink.create({
           [Modules.PRODUCT]: { product_id: productId },
           ["sales_channel"]: { sales_channel_id: SALES_CHANNEL_ID }
         })
       }
-      // 2. ОНОВЛЕННЯ ДАНИХ
-      const existingProduct = await productModule.retrieveProduct(productId)
+
+      // 2. ОНОВЛЕННЯ ДАНИХ ТА КОНТЕНТУ ЗІ STRAPI
+     
+      const existingProduct = await productModule.retrieveProduct(productId, { relations: ["images"] });
+
+      // ВИПРАВЛЕННЯ ПОМИЛКИ: Medusa хоче об'єкти { url: "..." }
+      let imagesData: { url: string }[] = [];
+      
+      if (strapiProduct?.attributes?.images?.data) {
+        imagesData = strapiProduct.attributes.images.data.map((img: any) => ({
+  url: `http://127.0.0.1:1337${img.attributes.url}`
+}));
+      }
+
       await productModule.updateProducts(productId, {
         title: item.name,
+        description: strapiProduct?.attributes?.description || "", 
         subtitle: item.brand,
+        // Передаємо або нові фото, або старі у правильному форматі
+        images: imagesData.length > 0 ? imagesData : (existingProduct.images as any),
         category_ids: categoryId ? [categoryId] : [],
         metadata: {
           ...(existingProduct.metadata || {}),
           rrc_price: item.price_rrc,
           brand: item.brand,
           series: item.series,
+          strapi_id: strapiProduct ? strapiProduct.id : null,
           attributes: item.attributes || {}
         }
-      })
+      });
 
-      // 3. ОТРИМАННЯ ЛІНКІВ
+      // 3. ОТРИМАННЯ ЛІНКІВ (далі твій код без змін...)
       const linkDataResults = await (remoteQuery as any)({
         entity: "variant",
         fields: ["id", "price_set.id", "inventory_items.inventory_item_id"],

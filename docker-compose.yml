@@ -1,72 +1,99 @@
+version: '3.8'
 
 services:
-  # 1. БАЗА (Твої оригінальні дані)
+  # --- БАЗА ДАНИХ MEDUSA ---
   medusa_db:
     image: postgres:16
     container_name: medusa_db
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=medusa
       - POSTGRES_PASSWORD=medusa
       - POSTGRES_DB=medusa_db
-    restart: always
     volumes:
-      - ./postgres_data_medusa:/var/lib/postgresql/data
+      - medusa_db_data:/var/lib/postgresql/data
 
-  # 2. MEDUSA (Використовує ТВИЙ Dockerfile в корені)
+  # --- БАЗА ДАНИХ STRAPI ---
+  strapi_db:
+    image: postgres:16
+    container_name: strapi_db
+    restart: unless-stopped
+    ports:
+      - "5433:5432" # Зовнішній 5433, щоб не було конфлікту з 5432
+    environment:
+      - POSTGRES_USER=strapi
+      - POSTGRES_PASSWORD=strapi
+      - POSTGRES_DB=strapi_db
+    volumes:
+      - strapi_db_data:/var/lib/postgresql/data
+
+  # --- REDIS (Критично для Medusa v2) ---
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # --- MEILISEARCH ---
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    restart: unless-stopped
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili_data:/meili_data
+
+  # --- MEDUSA BACKEND ---
   medusa:
     container_name: medusa_backend
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./backend
     depends_on:
       - medusa_db
+      - redis
     ports:
-      - "9000:9000"
+      - "9001:9000"
     environment:
-      - DATABASE_URL=postgres://medusa:medusa@medusa_db:5432/medusa_db
+      - DATABASE_URL=postgres://medusa:medusa@medusa_db:5432/medusa_db?sslmode=disable
       - REDIS_URL=redis://redis:6379
+      - ADMIN_CORS=http://localhost:9000,http://0.0.0.0:9000
+      - AUTH_CORS=http://localhost:9000,http://0.0.0.0:9000
+      - JWT_SECRET=supersecret_change_me_later
+      - COOKIE_SECRET=supersecret_change_me_later
+    restart: unless-stopped
 
-  # 3. STRAPI (Окремий сервіс)
+  # --- STRAPI CMS ---
   strapi:
     container_name: strapi
     build:
       context: ./strapi-cms
-      dockerfile: Dockerfile
-    # --- ДОДАЙ ЦЕЙ БЛОК ---
-    volumes:
-      - ./strapi-cms:/srv/app
-      - /srv/app/node_modules
-      - /srv/app/.tmp
-      - /srv/app/dist
-    # ----------------------
     depends_on:
-      - medusa_db
+      - strapi_db
     ports:
       - "1337:1337"
     environment:
-      - NODE_OPTIONS=--max-old-space-size=4096
       - DATABASE_CLIENT=postgres
-      - DATABASE_HOST=medusa_db
+      - DATABASE_HOST=strapi_db
       - DATABASE_PORT=5432
       - DATABASE_NAME=strapi_db
-      - DATABASE_USERNAME=medusa
-      - DATABASE_PASSWORD=medusa
-      - CLOUDINARY_NAME=dldvbmjnm
-      - CLOUDINARY_KEY=427993629986674
-      - CLOUDINARY_SECRET=CHVmr1ubrnYsznx6-ZQJDdT7gOY
-    env_file:
-      - ./strapi-cms/.env
+      - DATABASE_USERNAME=strapi
+      - DATABASE_PASSWORD=strapi
+      # Секрети, без яких Strapi вилітає (вже перевірені)
+      - APP_KEYS=testKey1,testKey2,testKey3,testKey4
+      - API_TOKEN_SALT=testSalt123
+      - ADMIN_JWT_SECRET=test123456
+      - TRANSFER_TOKEN_SALT=testSalt456
+      - JWT_SECRET=test123456
+    volumes:
+      # ПРАВИЛЬНИЙ ЗАПИС: прокидаємо папку з хоста в контейнер
+      - /home/vpnaz/projects/medusaStore/data:/srv/app/data
+    restart: unless-stopped
 
-  # 4. REDIS & SEARCH
-  redis:
-    image: redis:latest
-    container_name: redis
-  meilisearch:
-    image: getmeili/meilisearch:latest
-    container_name: meilisearch
-    ports:
-      - "7700:7700"
-    environment:
-      - MEILI_MASTER_KEY=GN645xqX-5oda_F8fc9bYPSo_k60Z8nsPzyNWneQjss
+volumes:
+  medusa_db_data:
+  strapi_db_data:
+  meili_data:

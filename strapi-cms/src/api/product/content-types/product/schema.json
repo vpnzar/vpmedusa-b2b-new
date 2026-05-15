@@ -9,12 +9,15 @@
   "options": {
     "draftAndPublish": true
   },
+  "pluginOptions": {},
   "attributes": {
     "title": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "article": {
       "type": "string",
+      "required": true,
       "unique": true
     },
     "price": {
@@ -23,11 +26,18 @@
     "metadata": {
       "type": "json"
     },
-    "category": {
+    "main_image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "categories": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::category.category",
-      "inversedBy": "products"
+      "mappedBy": "products"
     }
   }
 }

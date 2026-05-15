@@ -1,4 +1,10 @@
 node_modules
+.git
+.next
 .cache
 build
-.git
+dist
+postgres_data_medusa
+postgres_data_strapi
+meili_data
+*.log

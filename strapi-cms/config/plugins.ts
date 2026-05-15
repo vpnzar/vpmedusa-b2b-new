@@ -1,6 +1,7 @@
 import type { Core } from '@strapi/strapi';
 
 export default ({ env }: { env: any }) => ({
+  // Налаштування мов
   i18n: {
     enabled: true,
     config: {
@@ -8,7 +9,7 @@ export default ({ env }: { env: any }) => ({
       locales: ['uk', 'en'],
     },
   },
-  // Додаємо блок завантаження для Cloudinary
+  // Налаштування Cloudinary
   upload: {
     config: {
       provider: 'cloudinary',
@@ -19,6 +20,7 @@ export default ({ env }: { env: any }) => ({
       },
       actionOptions: {
         upload: {},
+        uploadStream: {}, // Додай це для підтримки великих файлів
         delete: {},
       },
     },

@@ -1,7 +1,8 @@
+export const dynamic = "force-dynamic"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getCategoryByHandle, listCategories } from "@lib/data/categories"
-import { StoreTemplate } from "@modules/store/templates"
+import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 type Props = {
@@ -12,14 +13,10 @@ type Props = {
   }>
 }
 
-/**
- * ЦЕ ТОЙ КОД, ЯКИЙ «ВИПАДАВ»: 
- * Допомагає Next.js зрозуміти всі існуючі шляхи категорій при збірці
- */
 export async function generateStaticParams() {
   const product_categories = await listCategories()
 
-  if (!product_categories) {
+  if (!product_categories || !Array.isArray(product_categories)) {
     return []
   }
 
@@ -30,7 +27,6 @@ export async function generateStaticParams() {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  // Беремо останній елемент масиву (наприклад 'elektroinstrument' з ['ua', 'elektroinstrument'])
   const handle = params.category[params.category.length - 1]
 
   const data = (await getCategoryByHandle([handle]).catch(() => null)) as any
@@ -49,25 +45,38 @@ export default async function CategoryPage(props: Props) {
   const searchParams = await props.searchParams
   const { sortBy, page } = searchParams
 
-  // Фільтруємо масив, щоб виключити випадкове потрапляння 'categories' в шлях
   const cleanCategoryArray = params.category.filter(c => c !== "categories")
   const handle = cleanCategoryArray[cleanCategoryArray.length - 1]
 
   if (!handle) return notFound()
 
-  const data = (await getCategoryByHandle([handle]).catch(() => null)) as any
+  // Отримуємо дані паралельно
+  const [data, categoriesResponse] = await Promise.all([
+    getCategoryByHandle([handle]).catch(() => null) as any,
+    listCategories().catch(() => [])
+  ])
+
   const category = data?.product_categories?.[0]
 
   if (!category) {
     return notFound()
   }
 
+  /**
+   * КРИТИЧНО: Medusa v2 може повертати або масив, або об'єкт { product_categories: [] }.
+   * Робимо перевірку, щоб клієнтський компонент не "впав" через спробу замапити не масив.
+   */
+  const allCategories = Array.isArray(categoriesResponse)
+    ? categoriesResponse
+    : (categoriesResponse as any)?.product_categories || []
+
   return (
-    <StoreTemplate
+    <CategoryTemplate
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
       category={category}
+      allCategories={allCategories}
     />
   )
 }

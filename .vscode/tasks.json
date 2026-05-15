@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 START FULL STACK",
+      "dependsOrder": "sequence", // Важливо: спочатку докер, потім інше
+      "dependsOn": ["DOCKER - up", "FRONT - Next.js", "BACK - Medusa logs"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "DOCKER - up",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent", // Не відкривати зайве вікно, якщо все ок
+        "close": true
+      }
+    },
+    {
+      "label": "FRONT - Next.js",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/storefront"
+      },
+      "presentation": {
+        "group": "dev",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "BACK - Medusa logs",
+      "type": "shell",
+      "command": "docker logs -f medusa_backend",
+      "presentation": {
+        "group": "dev",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

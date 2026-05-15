@@ -1,18 +1,28 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node16",
-    "module": "Node16",
-    "target": "ES2022",
-    "types": ["node"]
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    // Цей рядок прибере твою помилку:
+    "ignoreDeprecations": "6.0"
   },
   "include": [
-    "**/*"
-, "../medusa-loader/import-data.js"  ],
+    "src/**/*", 
+    "**/*",
+    "../medusa-loader/import-data.js"
+  ],
   "exclude": [
     "node_modules",
     ".medusa/server",
     ".medusa/admin",
-    ".cache"
+    ".cache",
+    "dist"
   ]
 }
-

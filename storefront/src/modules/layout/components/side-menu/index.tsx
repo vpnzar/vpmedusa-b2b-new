@@ -15,7 +15,12 @@ const SideMenu: React.FC<SideMenuProps> = ({ isStatic = true }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+        // ВИПРАВЛЕННЯ ТУТ:
+        // Якщо ми в браузері, беремо поточний hostname (localhost або 192.168.0.115)
+        // Якщо на сервері (SSR), беремо значення з .env
+        const currentHost = typeof window !== "undefined" ? window.location.hostname : "127.0.0.1"
+        const baseUrl = `http://${currentHost}:9001`
+
         const response = await fetch(
           `${baseUrl}/store/product-categories?parent_category_id=null&include_descendants_tree=true`,
           {
@@ -25,6 +30,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ isStatic = true }) => {
             },
           }
         )
+
         if (!response.ok) throw new Error("Backend unreachable")
         const data = await response.json()
         setCategories(data.product_categories || [])

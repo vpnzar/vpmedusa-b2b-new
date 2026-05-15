@@ -1,1 +1,15 @@
-postgres_data_medusa/
+# Ігноруємо бази даних Meilisearch
+meili_data/
+
+# Ігноруємо модулі Node.js (це дуже важливо!)
+node_modules/
+
+# Ігноруємо кеш та білди
+.cache/
+build/
+dist/
+
+# Ігноруємо секретні ключі
+.env
+data/images/*
+!data/images/.gitkeep

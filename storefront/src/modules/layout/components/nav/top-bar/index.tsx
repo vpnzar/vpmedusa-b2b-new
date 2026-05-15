@@ -1,3 +1,5 @@
+'use client'
+
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const TopBar = () => (
